@@ -239,6 +239,12 @@ resource "aws_apigatewayv2_authorizer" "zodh_default_authorizer" {
   }
 }
 
+# S3 Configuration
+
+resource "aws_s3_bucket" "zodh_video_files" {
+  bucket = var.video_bucket_name
+}
+
 # Execution Output
 
 output "api_url" {
