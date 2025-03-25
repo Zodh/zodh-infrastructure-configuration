@@ -239,7 +239,7 @@ resource "aws_apigatewayv2_authorizer" "zodh_default_authorizer" {
   }
 }
 
-# S3 & Pending Video Queue Configuration
+# S3 & SNS and SQS Configuration
 
 ## Bucket Configuration
 
