@@ -7,5 +7,17 @@ variable "aws_region" {
 variable "video_bucket_name" {
   description = "Bucket Name Given to the Bucket that allocates Users Uploaded Videos"
   type = string
-  default = "zodh-video-bucket"
+  default = "zodh-raw-video-bucket"
+}
+
+variable "pending_video_topic_name" {
+  description = "This variable is the name of the topic used by S3 to notify zodh-video-service and zodh-video-processor that a new file was uploaded by an user."
+  type = string
+  default = "pending-video-topic"
+}
+
+variable "video_status_update_queue_name" {
+  description = "This variable is the name of the queue used by zodh-video-service to receive a video status update."
+  type = string
+  default = "video-status-update-queue"
 }

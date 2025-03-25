@@ -239,14 +239,85 @@ resource "aws_apigatewayv2_authorizer" "zodh_default_authorizer" {
   }
 }
 
-# S3 Configuration
+# S3 & Pending Video Queue Configuration
+
+## Bucket Configuration
 
 resource "aws_s3_bucket" "zodh_video_files" {
   bucket = var.video_bucket_name
+}
+
+resource "aws_s3_bucket_notification" "zodh_video_files_notification" {
+  bucket = aws_s3_bucket.zodh_video_files.id
+
+  topic {
+    topic_arn     = aws_sns_topic.pending_video_topic.arn
+    events        = ["s3:ObjectCreated:*"]
+  }
+
+  depends_on = [ aws_sns_topic.pending_video_topic ]
+}
+
+## SNS Configuration
+
+resource "aws_sns_topic" "pending_video_topic" {
+  name = var.pending_video_topic_name
+}
+
+resource "aws_sns_topic_policy" "pending_video_topic_policy" {
+  arn = aws_sns_topic.pending_video_topic.arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = { Service = "s3.amazonaws.com" }
+        Action = "SNS:Publish"
+        Resource = aws_sns_topic.pending_video_topic.arn
+      }
+    ]
+  })
+}
+
+## Queue Configuration
+
+resource "aws_sqs_queue" "video_status_update_queue" {
+  name = var.video_status_update_queue_name
+}
+
+resource "aws_sqs_queue_policy" "video_status_update_queue_policy" {
+  queue_url = aws_sqs_queue.video_status_update_queue.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = { Service = "sns.amazonaws.com" }
+        Action = "SQS:SendMessage"
+        Resource = aws_sqs_queue.video_status_update_queue.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_sns_topic.pending_video_topic.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_sns_topic_subscription" "zodh_video_processor_subscriber" {
+  topic_arn = aws_sns_topic.pending_video_topic.arn
+  protocol = "sqs"
+  endpoint = aws_sqs_queue.video_status_update_queue.arn
 }
 
 # Execution Output
 
 output "api_url" {
   value = aws_apigatewayv2_api.auth_api.api_endpoint
+}
+
+output "queue_url" {
+  value = aws_sqs_queue.video_status_update_queue.url
 }

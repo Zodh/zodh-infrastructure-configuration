@@ -15,5 +15,7 @@ CREATE TABLE public.video_cutter (
 	CONSTRAINT video_cutter_pkey PRIMARY KEY (id),
 	CONSTRAINT video_cutter_video_cutter_file_id_key UNIQUE (video_cutter_file_id),
 	CONSTRAINT video_cutter_video_cutter_format_check CHECK (((video_cutter_format)::text = 'MP4'::text)),
-	CONSTRAINT video_cutter_video_cutter_processing_status_check CHECK (((video_cutter_processing_status)::text = ANY ((ARRAY['UPLOADING'::character varying, 'AWAITING_PROCESSING'::character varying, 'PROCESSING'::character varying, 'FINISHED'::character varying, 'ERROR'::character varying])::text[])))
+	CONSTRAINT video_cutter_video_cutter_processing_status_check CHECK (((video_cutter_processing_status)::text = ANY ((ARRAY['RECEIVING'::character varying, 'AWAITING_UPLOAD'::character varying, 'AWAITING_PROCESSING'::character varying, 'PROCESSING'::character varying, 'FINISHED'::character varying, 'ERROR'::character varying, 'VIDEO_NOT_UPLOADED_BY_USER'::character varying])::text[])))
 );
+CREATE INDEX idx_creation_status ON public.video_cutter USING btree (video_cutter_creation_date_time, video_cutter_processing_status);
+CREATE INDEX idx_video_user ON public.video_cutter USING btree (video_cutter_user_id);
