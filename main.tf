@@ -312,12 +312,47 @@ resource "aws_sns_topic_subscription" "zodh_video_processor_subscriber" {
   endpoint = aws_sqs_queue.video_status_update_queue.arn
 }
 
+resource "aws_sqs_queue" "video_awaiting_processing_queue" {
+  name = var.video_awaiting_processing_queue_name
+}
+
+resource "aws_sqs_queue_policy" "video_awaiting_processing_queue_policy" {
+  queue_url = aws_sqs_queue.video_awaiting_processing_queue.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = { Service = "sns.amazonaws.com" }
+        Action = "SQS:SendMessage"
+        Resource = aws_sqs_queue.video_awaiting_processing_queue.arn
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" = aws_sns_topic.pending_video_topic.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_sns_topic_subscription" "zodh_video_processor_awaiting_processing_subscriber" {
+  topic_arn = aws_sns_topic.pending_video_topic.arn
+  protocol = "sqs"
+  endpoint = aws_sqs_queue.video_awaiting_processing_queue.arn
+}
+
 # Execution Output
 
 output "api_url" {
   value = aws_apigatewayv2_api.auth_api.api_endpoint
 }
 
-output "queue_url" {
+output "video_status_update_queue_url" {
   value = aws_sqs_queue.video_status_update_queue.url
+}
+
+output "video_awaiting_processing_queue_url" {
+  value = aws_sqs_queue.video_awaiting_processing_queue.url
 }

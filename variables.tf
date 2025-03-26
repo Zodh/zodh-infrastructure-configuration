@@ -21,3 +21,9 @@ variable "video_status_update_queue_name" {
   type = string
   default = "video-status-update-queue"
 }
+
+variable "video_awaiting_processing_queue_name" {
+  description = "This variable is the name of the queue used by zodh-processor-service to receive a video to process"
+  type = string
+  default = "video-awaiting-processing-queue"
+}
