@@ -252,7 +252,7 @@ resource "aws_s3_bucket_notification" "zodh_video_files_notification" {
 
   topic {
     topic_arn     = aws_sns_topic.pending_video_topic.arn
-    events        = ["s3:ObjectCreated:*"]
+    events        = ["s3:ObjectCreated:Put"]
   }
 
   depends_on = [ aws_sns_topic.pending_video_topic ]
