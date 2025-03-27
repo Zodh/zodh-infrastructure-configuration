@@ -10,6 +10,12 @@ variable "video_bucket_name" {
   default = "zodh-raw-video-bucket"
 }
 
+variable "processed_images_bucket_name" {
+  description = "Bucket Name Given to the Bucket that allocates Users Uploaded Videos"
+  type = string
+  default = "zodh-processed-images-bucket"
+}
+
 variable "pending_video_topic_name" {
   description = "This variable is the name of the topic used by S3 to notify zodh-video-service and zodh-video-processor that a new file was uploaded by an user."
   type = string

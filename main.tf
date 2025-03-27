@@ -258,6 +258,37 @@ resource "aws_s3_bucket_notification" "zodh_video_files_notification" {
   depends_on = [ aws_sns_topic.pending_video_topic ]
 }
 
+resource "aws_s3_bucket" "zodh_processed_images_bucket" {
+  bucket = var.processed_images_bucket_name
+}
+
+resource "aws_s3_bucket_ownership_controls" "zodh_processed_images_bucket_ownership" {
+  bucket = aws_s3_bucket.zodh_processed_images_bucket.id
+  rule {
+    ## Means that all bucket objects are of the owner of the bucket.
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "zodh_processed_images_bucket_public_access_block" {
+  bucket = aws_s3_bucket.zodh_processed_images_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_acl" "zodh_processed_images_bucket_public_acl" {
+  depends_on = [
+    aws_s3_bucket_ownership_controls.zodh_processed_images_bucket_ownership,
+    aws_s3_bucket_public_access_block.zodh_processed_images_bucket_public_access_block,
+  ]
+
+  bucket = aws_s3_bucket.zodh_processed_images_bucket.id
+  acl    = "public-read"
+}
+
 ## SNS Configuration
 
 resource "aws_sns_topic" "pending_video_topic" {
