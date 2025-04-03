@@ -374,6 +374,66 @@ resource "aws_sns_topic_subscription" "zodh_video_processor_awaiting_processing_
   endpoint = aws_sqs_queue.video_awaiting_processing_queue.arn
 }
 
+# Secret Manager Configuration
+
+resource "random_string" "db_user" {
+  length  = 10
+  special = false
+}
+
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%^&*()-_=+[]{}<>:?"
+}
+
+resource "aws_secretsmanager_secret" "db_user" {
+  name = "db-user-secret"
+}
+
+resource "aws_secretsmanager_secret_version" "db_user_value" {
+  secret_id     = aws_secretsmanager_secret.db_user.id
+  secret_string = jsonencode({ "username" = random_string.db_user.result })
+}
+
+resource "aws_secretsmanager_secret" "db_password" {
+  name = "db-password-secret"
+}
+
+resource "aws_secretsmanager_secret_version" "db_password_value" {
+  secret_id     = aws_secretsmanager_secret.db_password.id
+  secret_string = jsonencode({ "password" = random_password.db_password.result })
+}
+
+# RDS Configuration
+
+resource "aws_db_instance" "zodh_video_database" {
+  identifier        = "zodh-video-database"
+  engine            = "postgres"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 10
+  db_name           = "postgres"
+  username           = jsondecode(aws_secretsmanager_secret_version.db_user_value.secret_string)["username"]
+  password           = jsondecode(aws_secretsmanager_secret_version.db_password_value.secret_string)["password"]
+  publicly_accessible = true
+  skip_final_snapshot  = true
+  vpc_security_group_ids = [ aws_security_group.video_db_sg.id ]
+  tags = {
+    Name = "postgre-instance"
+  }
+}
+
+resource "aws_security_group" "video_db_sg" {
+  name        = "rds-public-sg"
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # Execution Output
 
 output "api_url" {
