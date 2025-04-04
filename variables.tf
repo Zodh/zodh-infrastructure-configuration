@@ -33,3 +33,9 @@ variable "video_awaiting_processing_queue_name" {
   type = string
   default = "video-awaiting-processing-queue"
 }
+
+variable "project_name" {
+  description = "Project name"
+  type = string
+  default = "zodh"
+}

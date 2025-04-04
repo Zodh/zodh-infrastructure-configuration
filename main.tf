@@ -1,3 +1,48 @@
+# Create VPC
+resource "aws_vpc" "zodh_vpc" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = "zodh-vpc"
+  }
+}
+
+# Create Security Group
+resource "aws_security_group" "vpc_sg" {
+  name        = "SG-${var.project_name}"
+  description = "Security group for EKS node group"
+  vpc_id      = aws_vpc.zodh_vpc.id
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # Cognito Configuration
 
 resource "aws_cognito_user_pool" "zodh_video_user_pool" {
@@ -113,6 +158,12 @@ resource "aws_lambda_function" "zodh_authorizer_profiler" {
   ## In a production environment, it is very probably that the user must have a role with the right actions allowed.
   ## To this lambda, user must have cognito-idp:AdminGetUser
   role          = data.aws_iam_role.labrole.arn
+
+  vpc_config {
+    security_group_ids = [aws_security_group.vpc_sg.id]
+    subnet_ids = [aws_subnet.zodh_sub_1.id, aws_subnet.zodh_sub_2.id]
+  }
+
   environment {
     variables = {
       "USER_POOL_ID" = aws_cognito_user_pool.zodh_video_user_pool.id
@@ -431,6 +482,79 @@ resource "aws_security_group" "video_db_sg" {
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Subnet config
+
+## Create 2 subnets
+resource "aws_subnet" "zodh_sub_1" {
+  vpc_id                  = aws_vpc.zodh_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "${var.aws_region}a"
+  map_public_ip_on_launch = true
+}
+resource "aws_subnet" "zodh_sub_2" {
+  vpc_id                  = aws_vpc.zodh_vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "${var.aws_region}b"
+  map_public_ip_on_launch = true
+}
+
+## Create Internet Gateway
+resource "aws_internet_gateway" "zodh_igw" {
+  vpc_id = aws_vpc.zodh_vpc.id
+}
+
+## Create Route Table
+resource "aws_route_table" "zodh_route_table" {
+  vpc_id = aws_vpc.zodh_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.zodh_igw.id
+  }
+}
+
+## Create Route Table Association
+resource "aws_route_table_association" "zodh_subnet_association_1" {
+  subnet_id      = aws_subnet.zodh_sub_1.id
+  route_table_id = aws_route_table.zodh_route_table.id
+}
+resource "aws_route_table_association" "zodh_subnet_association_2" {
+  subnet_id      = aws_subnet.zodh_sub_2.id
+  route_table_id = aws_route_table.zodh_route_table.id
+}
+
+# EKS
+
+## Create Cluster
+resource "aws_eks_cluster" "zodh_cluster" {
+  name     = "${var.project_name}-eks-cluster"
+  role_arn = data.aws_iam_role.labrole.arn
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.zodh_sub_1.id, aws_subnet.zodh_sub_2.id]
+    security_group_ids = [aws_security_group.vpc_sg.id]
+  }
+}
+
+## Create Node Group
+resource "aws_eks_node_group" "zodh_node_group" {
+  depends_on = [aws_eks_cluster.zodh_cluster]
+
+  cluster_name    = aws_eks_cluster.zodh_cluster.name
+  node_group_name = "${var.project_name}-eks-node-group"
+  node_role_arn   = data.aws_iam_role.labrole.arn
+  subnet_ids      = [aws_subnet.zodh_sub_1.id, aws_subnet.zodh_sub_2.id]
+  disk_size       = 10
+  instance_types = ["t3.medium"]
+  ami_type = "AL2_x86_64"
+
+  scaling_config {
+    desired_size = 2
+    min_size     = 1
+    max_size     = 3
   }
 }
 
