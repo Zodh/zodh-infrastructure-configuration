@@ -485,6 +485,33 @@ resource "aws_security_group" "video_db_sg" {
   }
 }
 
+# Kubernetes secret configuration
+
+resource "kubernetes_secret" "zodh_secret" {
+  metadata {
+    name = "zodh-secret"
+  }
+
+  data = {
+    VIDEO_DATABASE_USER      = jsondecode(aws_secretsmanager_secret_version.db_user_value.secret_string)["username"]
+    VIDEO_DATABASE_PASSWORD  = jsondecode(aws_secretsmanager_secret_version.db_password_value.secret_string)["password"]
+    VIDEO_DATABASE_URL       = "jdbc:postgresql://${aws_db_instance.zodh_video_database.endpoint}/${aws_db_instance.zodh_video_database.db_name}"
+    VIDEO_BUCKET_NAME = var.video_bucket_name
+    VIDEO_STATUS_UPDATE_QUEUE_NAME = var.video_status_update_queue_name
+    VIDEO_STATUS_UPDATE_QUEUE_URL = aws_sqs_queue.video_status_update_queue.url
+    VIDEO_BUCKET_ZIP_NAME = var.processed_images_bucket_name
+    VIDEO_AWAITING_PROCESSING_QUEUE_NAME = var.video_awaiting_processing_queue_name
+  }
+
+  type = "Opaque"
+  depends_on = [
+    random_string.db_user,
+    random_password.db_password,
+    aws_db_instance.zodh_video_database,
+    aws_sqs_queue.video_status_update_queue
+  ]
+}
+
 # Subnet config
 
 ## Create 2 subnets
