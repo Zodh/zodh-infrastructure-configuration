@@ -438,21 +438,21 @@ resource "random_password" "db_password" {
   override_special = "!#$%^&*()-_=+[]{}<>:?"
 }
 
-resource "aws_secretsmanager_secret" "db_user" {
-  name = "db-user-secret"
+resource "aws_secretsmanager_secret" "zodh_db_user" {
+  name = "zodh-db-user-secret"
 }
 
 resource "aws_secretsmanager_secret_version" "db_user_value" {
-  secret_id     = aws_secretsmanager_secret.db_user.id
+  secret_id     = aws_secretsmanager_secret.zodh_db_user.id
   secret_string = jsonencode({ "username" = random_string.db_user.result })
 }
 
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "db-password-secret"
+resource "aws_secretsmanager_secret" "zodh_db_password" {
+  name = "zodh-db-password-secret"
 }
 
 resource "aws_secretsmanager_secret_version" "db_password_value" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
+  secret_id     = aws_secretsmanager_secret.zodh_db_password.id
   secret_string = jsonencode({ "password" = random_password.db_password.result })
 }
 
