@@ -439,7 +439,7 @@ resource "random_password" "db_password" {
 }
 
 resource "aws_secretsmanager_secret" "zodh_db_user" {
-  name = "zodh-db-user-secret"
+  name = "zodh-db-user-secret1"
 }
 
 resource "aws_secretsmanager_secret_version" "db_user_value" {
@@ -448,7 +448,7 @@ resource "aws_secretsmanager_secret_version" "db_user_value" {
 }
 
 resource "aws_secretsmanager_secret" "zodh_db_password" {
-  name = "zodh-db-password-secret"
+  name = "zodh-db-password-secret1"
 }
 
 resource "aws_secretsmanager_secret_version" "db_password_value" {
@@ -501,6 +501,10 @@ resource "kubernetes_secret" "zodh_secret" {
     VIDEO_STATUS_UPDATE_QUEUE_URL = aws_sqs_queue.video_status_update_queue.url
     VIDEO_BUCKET_ZIP_NAME = var.processed_images_bucket_name
     VIDEO_AWAITING_PROCESSING_QUEUE_NAME = var.video_awaiting_processing_queue_name
+    aws_region = var.aws_region
+    aws_access_key_id = var.access_key_id
+    aws_secret_access_key = var.secret_access_key
+    aws_session_token = var.session_token
   }
 
   type = "Opaque"
