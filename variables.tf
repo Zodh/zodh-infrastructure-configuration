@@ -39,21 +39,3 @@ variable "project_name" {
   type = string
   default = "zodh"
 }
-
-variable "access_key_id" {
-  description = "Access key id"
-  type = string
-  default = ""
-}
-
-variable "secret_access_key" {
-  description = "Secret Access key"
-  type = string
-  default = ""
-}
-
-variable "session_token" {
-  description = "Session token"
-  type = string
-  default = ""
-}
