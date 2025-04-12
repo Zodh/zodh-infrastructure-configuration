@@ -1,0 +1,42 @@
+name: "Deploy Infra with Terraform"
+
+on:
+  repository_dispatch:
+    types: [atualizar-infra]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código de Infra
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais da AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Baixar o .zip do Lambda
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -L -o zodh-authorizer.zip "https://github.com/Zodh/zodh-authorizer/releases/download/${{ github.event.client_payload.ref }}/zodh-authorizer.zip"
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: terraform init
+        run: terraform init
+
+      - name: terraform validate
+        run: terraform validate
+
+      - name: terraform plan
+        run: terraform plan -out=tfplan
+
+      - name: terraform apply
+        run: terraform apply -auto-approve tfplan
