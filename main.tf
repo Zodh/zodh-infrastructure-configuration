@@ -105,6 +105,9 @@ resource "aws_cognito_user_pool_client" "zodh_video_user_pool_client" {
   access_token_validity  = 2
   refresh_token_validity = 48
 
+  depends_on = [
+    aws_cognito_user_pool.zodh_video_user_pool
+  ]
 }
 
 # API Gateway && Lambda Configuration 
