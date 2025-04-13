@@ -41,6 +41,10 @@ resource "aws_security_group" "vpc_sg" {
     protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  depends_on = [
+    aws_vpc.zodh_vpc
+  ]
 }
 
 # Cognito Configuration
