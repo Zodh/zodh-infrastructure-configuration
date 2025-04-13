@@ -29,6 +29,9 @@ jobs:
           cd lambda
           zip -r ../zodh-authorizer.zip *
 
+      - name: Verificar arquivos na raiz do projeto
+        run: ls -lah
+
       - name: Configurar credenciais da AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -51,5 +54,13 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply com fallback
+        run: |
+          echo "Iniciando terraform apply..."
+          if terraform apply -auto-approve tfplan; then
+            echo "✅ Terraform apply executado com sucesso!"
+          else
+            echo "❌ Erro no terraform apply. Executando rollback com terraform destroy..."
+            terraform destroy -auto-approve || echo "Erro também ao tentar destruir recursos."
+            exit 1
+          fi
