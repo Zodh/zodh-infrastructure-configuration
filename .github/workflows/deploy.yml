@@ -12,23 +12,6 @@ jobs:
       - name: Checkout do código de Infra
         uses: actions/checkout@v4
 
-      - name: Clonar o repositório do Lambda
-        uses: actions/checkout@v4
-        with:
-          repository: Zodh/zodh-authorizer
-          path: lambda
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Instalar dependências do Lambda
-        working-directory: ./lambda
-        run: |
-          npm install axios pg aws-sdk
-
-      - name: Gerar .zip do Lambda
-        run: |
-          cd lambda
-          zip -r ../zodh-authorizer.zip *
-
       - name: Verificar arquivos na raiz do projeto
         run: ls -lah
 
