@@ -568,7 +568,7 @@ resource "random_password" "db_password" {
 }
 
 resource "aws_secretsmanager_secret" "zodh_db_user" {
-  name = "zodh-db-user-secret3"
+  name = "zodh-db-user-secret4"
 }
 
 resource "aws_secretsmanager_secret_version" "db_user_value" {
@@ -582,7 +582,7 @@ resource "aws_secretsmanager_secret_version" "db_user_value" {
 }
 
 resource "aws_secretsmanager_secret" "zodh_db_password" {
-  name = "zodh-db-password-secret3"
+  name = "zodh-db-password-secret4"
 }
 
 resource "aws_secretsmanager_secret_version" "db_password_value" {
