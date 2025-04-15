@@ -110,7 +110,7 @@ resource "aws_cognito_user_pool_client" "zodh_video_user_pool_client" {
   ]
 }
 
-# API Gateway && Lambda Configuration 
+# API Gateway && Lambda Configuration
 
 ## Lambda Configuration
 
@@ -403,6 +403,10 @@ resource "aws_s3_bucket_notification" "zodh_video_files_notification" {
     aws_sns_topic.pending_video_topic,
     aws_s3_bucket.zodh_video_files
   ]
+}
+
+resource "aws_s3_bucket" "zodh_lambda_bucket" {
+  bucket = var.lambda_bucket_name
 }
 
 resource "aws_s3_bucket" "zodh_processed_images_bucket" {

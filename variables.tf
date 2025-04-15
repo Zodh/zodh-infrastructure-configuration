@@ -10,6 +10,12 @@ variable "video_bucket_name" {
   default = "zodh-raw-video-bucket"
 }
 
+variable "lambda_bucket_name" {
+  description = "Bucket Name Given to the Bucket that allocates Lambda zip"
+  type = string
+  default = "zodh-lambda-bucket"
+}
+
 variable "processed_images_bucket_name" {
   description = "Bucket Name Given to the Bucket that allocates Users Uploaded Videos"
   type = string
