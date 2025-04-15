@@ -607,8 +607,8 @@ resource "aws_db_instance" "zodh_video_database" {
   instance_class      = "db.t3.micro"
   allocated_storage   = 10
   db_name             = "postgres"
-  username            = jsondecode(aws_secretsmanager_secret_version.db_user_value.secret_string)["username"]
-  password            = jsondecode(aws_secretsmanager_secret_version.db_password_value.secret_string)["password"]
+  username            = random_string.db_user.result
+  password            = random_password.db_password.result
   publicly_accessible = true
   skip_final_snapshot = true
   vpc_security_group_ids = [aws_security_group.video_db_sg.id]
