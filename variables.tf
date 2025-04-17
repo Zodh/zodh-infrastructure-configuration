@@ -7,19 +7,19 @@ variable "aws_region" {
 variable "video_bucket_name" {
   description = "Bucket Name Given to the Bucket that allocates Users Uploaded Videos"
   type = string
-  default = "zodh-raw-video-bucket"
+  default = "zodh-raw-video-bucket1"
 }
 
 variable "lambda_bucket_name" {
   description = "Bucket Name Given to the Bucket that allocates Lambda zip"
   type = string
-  default = "zodh-lambda-bucket"
+  default = "zodh-lambda-bucket1"
 }
 
 variable "processed_images_bucket_name" {
   description = "Bucket Name Given to the Bucket that allocates Users Uploaded Videos"
   type = string
-  default = "zodh-processed-images-bucket"
+  default = "zodh-processed-images-bucket1"
 }
 
 variable "pending_video_topic_name" {
